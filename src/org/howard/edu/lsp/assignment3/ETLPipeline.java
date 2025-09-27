@@ -8,8 +8,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * ETL Pipeline for processing product CSV data
+ * Reads products.csv, applies transformations, and writes to transformed_products.csv
+ */
 public class ETLPipeline {
+    
     private static final String INPUT_FILE = "data/products.csv";
     private static final String OUTPUT_FILE = "data/transformed_products.csv";
     private static final String HEADER = "ProductID,Name,Price,Category,PriceRange";
@@ -19,7 +23,9 @@ public class ETLPipeline {
         pipeline.runETL();
     }
     
-
+    /**
+     * Main ETL process orchestration
+     */
     public void runETL() {
         System.out.println("Starting ETL Pipeline...");
         
@@ -42,7 +48,9 @@ public class ETLPipeline {
         }
     }
     
-
+    /**
+     * Extract: Read CSV file and parse into array of string arrays
+     */
     public List<String[]> extract() throws IOException {
         List<String[]> data = new ArrayList<>();
         
@@ -68,7 +76,9 @@ public class ETLPipeline {
         return data;
     }
     
-
+    /**
+     * Transform: Apply business rules to the data
+     */
     public List<String[]> transform(List<String[]> data) {
         List<String[]> transformedData = new ArrayList<>();
         
@@ -101,7 +111,9 @@ public class ETLPipeline {
         return transformedData;
     }
     
-
+    /**
+     * Transform a single row according to business rules
+     */
     private String[] transformRow(String[] row) {
         String productId = row[0];
         String name = row[1];
@@ -112,18 +124,18 @@ public class ETLPipeline {
         double price = Double.parseDouble(priceStr);
         String originalCategory = category;
         
-        // Convert name to UPPERCASE
+        // Step 1: Convert name to UPPERCASE
         name = name.toUpperCase();
         
-        // Apply 10% discount if Electronics category
+        // Step 2: Apply 10% discount if Electronics category
         if ("Electronics".equalsIgnoreCase(originalCategory)) {
             price = price * 0.9; // Apply 10% discount
         }
         
-        // Round price to 2 decimal places
+        // Round price to 2 decimal places (half up)
         price = roundToTwoDecimals(price);
         
-        // Recategorize to Premium Electronics if needed
+        // Step 3: Recategorize to Premium Electronics if needed
         if (price > 500.00 && "Electronics".equalsIgnoreCase(originalCategory)) {
             category = "Premium Electronics";
         }
@@ -137,14 +149,18 @@ public class ETLPipeline {
         return new String[]{productId, name, formattedPrice, category, priceRange};
     }
     
-
+    /**
+     * Round price to two decimal places using HALF_UP rounding
+     */
     private double roundToTwoDecimals(double value) {
         BigDecimal bd = new BigDecimal(Double.toString(value));
         bd = bd.setScale(2, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
     
-
+    /**
+     * Determine price range category based on final price
+     */
     private String determinePriceRange(double price) {
         if (price >= 0.00 && price <= 10.00) {
             return "Low";
@@ -157,7 +173,9 @@ public class ETLPipeline {
         }
     }
     
-
+    /**
+     * Load: Write transformed data to output CSV file
+     */
     public void load(List<String[]> transformedData) throws IOException {
         // Create data directory if it doesn't exist
         Files.createDirectories(Paths.get("data"));
@@ -171,7 +189,9 @@ public class ETLPipeline {
         System.out.println("Data written to " + OUTPUT_FILE);
     }
     
-
+    /**
+     * Print summary of ETL operation
+     */
     private void printSummary(int rowsRead, int rowsTransformed) {
         System.out.println("\nETL Pipeline Summary:");
         System.out.println("Rows read: " + rowsRead);
