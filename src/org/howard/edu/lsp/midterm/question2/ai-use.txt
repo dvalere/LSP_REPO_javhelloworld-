@@ -1,0 +1,86 @@
+ME: Question 2. (20 pts.)
+
+Write a class AreaCalculator in the package org.howard.edu.lsp.midterm.question2 with the following overloaded methods:  This should be uploaded to your repo.
+
+// Circle area
+public static double area(double radius)
+
+// Rectangle area
+public static double area(double width, double height)
+
+// Triangle (base & height) area
+public static double area(int base, int height)
+
+// Square (side length) area
+public static double area(int side)
+
+Requirements:
+Each method should compute and return the correct area.
+* Circle area: π (use class Math.PI) × r²
+* Rectangle area: width × height
+* Triangle area: ½ × base × height
+* Square area: side²
+* For all methods: throw an IllegalArgumentException if any dimension is ≤ 0.
+
+Create a class named Main that invokes each overloaded method statically to produce exactly the following output:
+
+Circle radius 3.0 → area = 28.274333882308138
+Rectangle 5.0 x 2.0 → area = 10.0
+Triangle base 10, height 6 → area = 30.0
+Square side 4 → area = 16.0
+
+Finally, invoke at least one of the area methods with a value that causes an IllegalArgumentException to be thrown.
+* Catch the exception using a try/catch block.
+* Print an error message to System.out. (Any message is fine.)
+Briefly (2–3 sentences as a comment in class Main) explain if overloading or simply use methods with different names, i.e., rectactangleArea, circleArea, etc.. 
+
+
+
+
+
+
+
+
+
+CLAUDE:
+I'll help you create the AreaCalculator class with overloaded methods and a Main class to demonstrate their usage.AreaCalculator.javaCode package org.howard.edu.lsp.midterm.question2;
+AreaCalculator Class Features:
+
+Four overloaded area methods - all with the same name but different parameter signatures:
+
+area(double radius) - for circles
+area(double width, double height) - for rectangles
+area(int base, int height) - for triangles
+area(int side) - for squares
+
+
+Correct formulas implemented:
+
+Circle: π × r² (using Math.PI)
+Rectangle: width × height
+Triangle: ½ × base × height (0.5 × base × height)
+Square: side²
+
+
+Exception handling: Each method throws an IllegalArgumentException if any dimension is ≤ 0
+
+Main Class Features:
+
+Static method invocation: All methods are called statically using AreaCalculator.area(...)
+Required output format: The output matches exactly what was specified
+Exception demonstration: Includes a try-catch block that catches an IllegalArgumentException when passing a negative value
+Design explanation comment: Explains why method overloading is preferable to using different method names
+
+Key Design Benefits of Overloading:
+The comment in the Main class explains that overloading provides a cleaner API where:
+
+The method name area is intuitive for all shapes
+The compiler automatically selects the correct method based on parameters
+The code is more readable and maintainable than having separate names like circleArea, rectangleArea, etc.
+
+This solution demonstrates proper use of method overloading, exception handling, and follows object-oriented design principles.
+
+
+
+Summary:
+I gave Claude the question and asked for the code. Claude gave me the answer, and I reviewed, put it into my repository, compiled, and tested it.

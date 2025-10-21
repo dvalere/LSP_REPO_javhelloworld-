@@ -1,0 +1,300 @@
+ME: Can you help me with this:
+Question 4. (30 pts.)
+
+Design and implement a small smart-campus device system showing both class inheritance (concrete classes extend a common abstract class) and interface implementation.
+
+1) Abstract Base Class — Device
+The following Device class is partially implemented for you. You must not modify this code, but you will use it in your subclasses:
+
+
+package org.howard.edu.lsp.midterm.question4;
+
+public abstract class Device {
+  private String id;
+  private String location;
+  private long lastHeartbeatEpochSeconds;
+  private boolean connected;
+
+  // PROVIDED CONSTRUCTOR
+  public Device(String id, String location) {
+    if (id == null || id.isEmpty() || location == null || location.isEmpty()) {
+      throw new IllegalArgumentException("Invalid id or location");
+    }
+    this.id = id;
+    this.location = location;
+    this.lastHeartbeatEpochSeconds = 0;
+    this.connected = false;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+
+
+  public long getLastHeartbeatEpochSeconds() {
+    return lastHeartbeatEpochSeconds;
+  }
+
+  public boolean isConnected() {
+    return connected;
+  }
+
+  protected void setConnected(boolean connected) {
+    this.connected = connected;
+  }
+
+  public void heartbeat() {
+    this.lastHeartbeatEpochSeconds = System.currentTimeMillis() / 1000;
+  }
+
+  public abstract String getStatus();
+}
+
+You will extend this class in your DoorLock, Thermostat, and Camera implementations. All subclasses must call super(id, location) in their constructors.
+
+2) Capability Interfaces (behaviors only)
+Networked
+
+void connect();
+void disconnect();
+boolean isConnected();
+
+Behavior:
+connect() brings the device online by setting connected = true.
+disconnect() sets connected = false.
+isConnected() reports the current connection state. (Concrete classes may satisfy this using Device’s protected setter and public getter.)
+
+BatteryPowered
+
+int getBatteryPercent();      // 0..100
+void setBatteryPercent(int percent);
+
+Behavior:
+getBatteryPercent() returns current battery %.
+setBatteryPercent(int) updates it; throw IllegalArgumentException if outside 0..100 inclusive.
+
+3) Concrete Devices (must extend Device and implement interfaces)
+All fields must be private. Implement methods exactly as specified.
+
+DoorLock — extends Device, implements Networked, BatteryPowered
+Private fields
+
+private int batteryPercent;
+
+Constructor
+public DoorLock(String id, String location, int initialBattery)
+
+Call super(id, location).
+Initialize battery by calling setBatteryPercent(initialBattery) (enforces 0..100).
+
+
+Implemented methods
+
+// Networked
+@Override public void connect()    { setConnected(true);  }
+@Override public void disconnect() { setConnected(false); }
+@Override public boolean isConnected() { return super.isConnected(); }
+
+// BatteryPowered
+@Override public int getBatteryPercent() { return batteryPercent; }
+@Override public void setBatteryPercent(int percent) {
+  if (percent < 0 || percent > 100) throw new IllegalArgumentException("battery 0..100");
+  this.batteryPercent = percent;
+}
+
+// Status
+@Override public String getStatus() {
+  String connStatus = isConnected() ? "up" : "down";
+  return "DoorLock[id=" + getId() + ", loc=" + getLocation() +
+         ", conn=" + connStatus + ", batt=" + batteryPercent + "%]";
+}
+
+B) Thermostat — extends Device, implements Networked
+Private fields
+
+private double temperatureC;
+
+Constructor
+public Thermostat(String id, String location, double initialTempC)
+
+Call super(id, location).
+Initialize temperatureC to initialTempC.
+
+Accessors
+
+public double getTemperatureC();
+public void setTemperatureC(double temperatureC);
+
+Implemented methods
+
+// Networked
+@Override public void connect()    { setConnected(true);  }
+@Override public void disconnect() { setConnected(false); }
+@Override public boolean isConnected() { return super.isConnected(); }
+
+// Status
+@Override public String getStatus() {
+  String connStatus = isConnected() ? "up" : "down";
+  return "Thermostat[id=" + getId() + ", loc=" + getLocation() +
+         ", conn=" + connStatus + ", tempC=" + temperatureC + "]";
+}
+
+C) Camera — extends Device, implements Networked, BatteryPowered
+
+Private fields
+private int batteryPercent;
+
+Constructor
+
+public Camera(String id, String location, int initialBattery)
+
+Call super(id, location).
+Initialize battery by calling setBatteryPercent(initialBattery).
+
+
+
+
+Implemented methods
+
+// Networked
+@Override public void connect()    { setConnected(true);  }
+@Override public void disconnect() { setConnected(false); }
+@Override public boolean isConnected() { return super.isConnected(); }
+
+// BatteryPowered
+@Override public int getBatteryPercent() { return batteryPercent; }
+@Override public void setBatteryPercent(int percent) {
+  if (percent < 0 || percent > 100) throw new IllegalArgumentException("battery 0..100");
+  this.batteryPercent = percent;
+}
+
+// Status
+@Override public String getStatus() {
+  String connStatus = isConnected() ? "up" : "down";
+  return "Camera[id=" + getId() + ", loc=" + getLocation() +
+         ", conn=" + connStatus + ", batt=" + batteryPercent + "%]";
+}
+
+4) Provided Driver
+
+Do not modify this file. Your classes must compile and run with it unchanged.
+
+
+package org.howard.edu.lsp.midterm.question4;
+
+import java.util.*;
+
+public class Main {
+  public static void main(String[] args) {
+    Device lock   = new DoorLock("DL-101", "DormA-1F", 85);
+    Device thermo = new Thermostat("TH-202", "Library-2F", 21.5);
+    Device cam    = new Camera("CA-303", "Quad-North", 72);
+
+    // === Invalid battery test ===
+    System.out.println("\n== Exception test ==");
+    try {
+      Device badCam = new Camera("CA-404", "Test-Lab", -5);
+      System.out.println("ERROR: Exception was not thrown for invalid battery!");
+    } catch (IllegalArgumentException e) {
+      System.out.println("Caught expected exception: " + e.getMessage());
+    }
+
+    // === Heartbeat demonstration ===
+    System.out.println("\n== Heartbeat timestamps BEFORE ==");
+    for (Device d : Arrays.asList(lock, thermo, cam)) {
+      System.out.println(d.getId() + " lastHeartbeat=" + d.getLastHeartbeatEpochSeconds());
+    }
+
+    lock.heartbeat();
+    thermo.heartbeat();
+    cam.heartbeat();
+
+    System.out.println("\n== Heartbeat timestamps AFTER ==");
+    for (Device d : Arrays.asList(lock, thermo, cam)) {
+      System.out.println(d.getId() + " lastHeartbeat=" + d.getLastHeartbeatEpochSeconds());
+    }
+
+    // === Base-class polymorphism ===
+    List<Device> devices = Arrays.asList(lock, thermo, cam);
+    System.out.println("\n== Initial status via Device ==");
+    for (Device d : devices) {
+      System.out.println(d.getStatus());
+    }
+
+    // === Interface polymorphism: Networked ===
+    System.out.println("\n== Connect all Networked ==");
+    for (Device d : devices) {
+      if (d instanceof Networked) {
+        ((Networked) d).connect();
+      }
+    }
+
+    // === Interface polymorphism: BatteryPowered ===
+    System.out.println("\n== Battery report (BatteryPowered) ==");
+    for (Device d : devices) {
+      if (d instanceof BatteryPowered) {
+        BatteryPowered bp = (BatteryPowered) d;
+        System.out.println(d.getClass().getSimpleName() + " battery = " + bp.getBatteryPercent() + "%");
+      }
+    }
+
+    // === Final status check ===
+    System.out.println("\n== Updated status via Device ==");
+    for (Device d : devices) {
+      System.out.println(d.getStatus());
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CLAUDE: 
+I'll help you with Question 4.
+Question 4 Solution
+I'll create all the required classes following the specifications exactly:Device.java - Abstract Base ClassCode package org.howard.edu.lsp.midterm.question4;
+
+public abstract class Device {
+    private String id;
+    private String location;
+    private long lastHeartbeatEpochSeconds;
+    private boolean connected;
+
+    // PROVIDED CONSTRUCTOR
+    public DeviceNow, let me create the Brief Rationale document:Question 4 - Brief RationaleDocument # Question 4 - Brief Rationale
+
+## Why is Device defined as an abstract class?
+
+Device is defined as an abstract class because it provides common functionality and state (id, location, lastHeartbeatEpochSeconds, connected) that all device types shareQuestion
+
+I've created all the required files for Question 4
+Question 4 Files to Upload:
+
+Device.java - The abstract base class (already provided, don't modify)
+Networked.java - Interface for network-capable devices
+BatteryPowered.java - Interface for battery-powered devices
+DoorLock.java - Concrete class implementing both interfaces
+Thermostat.java - Concrete class implementing only Networked
+Camera.java - Concrete class implementing both interfaces
+Main.java - The driver class (provided, don't modify)
+Brief Rationale - Answers to the three conceptual questions
+
+
+Summary:
+I gave Claude the question and asked for the code. Claude gave me the answer, and I reviewed, put it into my repository, compiled, and tested it.
